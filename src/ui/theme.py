@@ -42,7 +42,7 @@ INPUT_BAR_HEIGHT = 72
 
 WINDOW_WIDTH = 900
 WINDOW_HEIGHT = 700
-WINDOW_MIN_WIDTH = 700
+WINDOW_MIN_WIDTH = 450   # half of default width
 WINDOW_MIN_HEIGHT = 500
 
 # ── Bubble ───────────────────────────────────────────────────────────────────
@@ -62,6 +62,22 @@ FONT_INPUT = 14
 FONT_SETTINGS_LABEL = 12
 FONT_SETTINGS_HEADER = 13
 FONT_SECTION_TITLE = 15
+
+# Chat appearance — user-configurable via Settings panel (Phase 2)
+CHAT_FONT_SIZE_MIN = 11
+CHAT_FONT_SIZE_DEFAULT = 14
+CHAT_FONT_SIZE_MAX = 22
+CHAT_ZOOM_MIN = 0.75       # 75%
+CHAT_ZOOM_DEFAULT = 1.0    # 100%
+CHAT_ZOOM_MAX = 1.5        # 150%
+CHAT_FONTS = [
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Inter",
+    "Source Code Pro",  # monospace option
+]
+CHAT_FONT_DEFAULT = "Roboto"
 
 # ── Spacing ──────────────────────────────────────────────────────────────────
 SPACE_XS = 4
