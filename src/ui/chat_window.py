@@ -3,9 +3,13 @@ Main layout: assembles TitleBar + ControlBar + ChatArea + InputBar.
 Phase 1: wired to demo messages only — no real AI calls.
 """
 import asyncio
+import traceback
 import flet as ft
 
+from utils.logger import get_logger
 from ui.theme import BG_PRIMARY, AGENT_COLORS
+
+log = get_logger(__name__)
 from ui.title_bar import TitleBar
 from ui.control_bar import ControlBar
 from ui.chat_area import ChatArea
@@ -62,7 +66,12 @@ class ChatWindow(ft.Column):
 
     async def _load_demo(self):
         """Replay demo messages with pacing to show the UI in action."""
-        await asyncio.sleep(0.3)
+        log.info("Loading demo conversation")
+        try:
+            await asyncio.sleep(0.3)
+        except Exception:
+            log.error("_load_demo failed:\n%s", traceback.format_exc())
+            return
         prev_sender = None
 
         for msg in DEMO_MESSAGES:

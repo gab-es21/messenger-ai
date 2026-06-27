@@ -46,7 +46,7 @@ class TypingIndicator(ft.Container):
                 bottom_left=BUBBLE_RADIUS,
                 bottom_right=BUBBLE_RADIUS,
             ),
-            padding=ft.padding.symmetric(horizontal=14, vertical=12),
+            padding=ft.padding.only(left=14, right=14, top=12, bottom=12),
             width=64,
         )
 

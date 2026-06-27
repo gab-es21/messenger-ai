@@ -42,7 +42,7 @@ class ChatArea(ft.Container):
         self._list = ft.ListView(
             expand=True,
             spacing=4,
-            padding=ft.padding.symmetric(horizontal=SPACE_MD, vertical=12),
+            padding=ft.padding.only(left=SPACE_MD, right=SPACE_MD, top=12, bottom=12),
             auto_scroll=True,
         )
         self._empty = EmptyState()

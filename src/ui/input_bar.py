@@ -22,7 +22,7 @@ class InputBar(ft.Container):
             border_width=1.5,
             focused_border_width=1.5,
             bgcolor=BG_PRIMARY,
-            content_padding=ft.padding.symmetric(horizontal=20, vertical=12),
+            content_padding=ft.padding.only(left=20, right=20, top=12, bottom=12),
             text_size=FONT_INPUT,
             multiline=True,
             min_lines=1,
@@ -52,7 +52,7 @@ class InputBar(ft.Container):
             height=INPUT_BAR_HEIGHT,
             bgcolor=BG_SECONDARY,
             border=ft.border.only(top=ft.BorderSide(1, BORDER)),
-            padding=ft.padding.symmetric(horizontal=SPACE_MD, vertical=12),
+            padding=ft.padding.only(left=SPACE_MD, right=SPACE_MD, top=12, bottom=12),
         )
 
     # ── Public API ────────────────────────────────────────────────────────────

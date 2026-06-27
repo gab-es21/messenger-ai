@@ -27,8 +27,8 @@ class ControlBar(ft.Container):
             elevation=0,
             style=ft.ButtonStyle(
                 shape=ft.RoundedRectangleBorder(radius=8),
-                padding=ft.padding.symmetric(horizontal=14, vertical=8),
-                overlay_color=ft.colors.with_opacity(0.15, ft.colors.WHITE),
+                padding=ft.padding.only(left=14, right=14, top=8, bottom=8),
+                overlay_color="#FFFFFF26",  # white at 15% opacity
             ),
             on_click=self._handle_click,
         )
@@ -66,8 +66,11 @@ class ControlBar(ft.Container):
             ),
             height=CONTROL_BAR_HEIGHT,
             bgcolor=BG_CONTROL_BAR,
-            border=ft.border.symmetric(horizontal=ft.BorderSide(1, BORDER)),
-            padding=ft.padding.symmetric(horizontal=16),
+            border=ft.border.only(
+                top=ft.BorderSide(1, BORDER),
+                bottom=ft.BorderSide(1, BORDER),
+            ),
+            padding=ft.padding.only(left=16, right=16),
         )
 
     # ── Public API ────────────────────────────────────────────────────────────
