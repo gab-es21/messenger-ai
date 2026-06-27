@@ -80,11 +80,12 @@ class ChatWindow(ft.Stack):
 
     # ── Effective font size ───────────────────────────────────────────────────
 
-    def _effective_font_size(self) -> int:
-        from data.settings_store import SettingsStore
-        app = SettingsStore.instance().appearance
-        base = app.get("font_size", CHAT_FONT_SIZE_DEFAULT)
-        zoom = app.get("zoom", CHAT_ZOOM_DEFAULT)
+    def _effective_font_size(self, appearance: dict | None = None) -> int:
+        if appearance is None:
+            from data.settings_store import SettingsStore
+            appearance = SettingsStore.instance().appearance
+        base = appearance.get("font_size", CHAT_FONT_SIZE_DEFAULT)
+        zoom = appearance.get("zoom", CHAT_ZOOM_DEFAULT)
         return max(9, min(28, int(base * zoom)))
 
     # ── Message helpers ───────────────────────────────────────────────────────
@@ -118,10 +119,10 @@ class ChatWindow(ft.Stack):
         self._message_log.append(entry)
         self._chat.add(SystemMessage(text))
 
-    def _rebuild_chat(self):
-        """Clear and re-add all stored messages with current font size."""
+    def _rebuild_chat(self, appearance: dict | None = None):
+        """Clear and re-add all stored messages using the given (or stored) appearance."""
         self._chat.clear()
-        fz = self._effective_font_size()
+        fz = self._effective_font_size(appearance)
         for entry in self._message_log:
             if entry["type"] == "user":
                 b = UserBubble(content=entry["content"], font_size=fz)
@@ -214,17 +215,15 @@ class ChatWindow(ft.Stack):
         self._rebuild_chat()
 
     def _apply_appearance(self, appearance: dict):
-        """Live-apply font/zoom — rebuilds chat so text reflows naturally."""
+        """Live preview — rebuilds chat with draft appearance without touching the store."""
         if self.page:
             font = appearance.get("font_family", "Roboto")
             self.page.theme = ft.Theme(font_family=font)
             self.page.update()
-        self._rebuild_chat()
+        self._rebuild_chat(appearance)
 
     def _revert_appearance(self, original_appearance: dict):
-        """Called on Cancel — restores original appearance."""
-        from data.settings_store import SettingsStore
-        SettingsStore.instance().appearance.update(original_appearance)
+        """Cancel — rebuild using the original appearance without touching the store."""
         self._apply_appearance(original_appearance)
 
     def _handle_clear_chat(self):
