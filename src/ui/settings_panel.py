@@ -454,6 +454,11 @@ class SettingsPanel(ft.Container):
             border_radius=8, border_color=BORDER, focused_border_color="#0084FF", text_size=13,
             on_change=lambda e: self._update_draft(["global", "ollama_url"], e.control.value),
         )
+        self._ollama_model_field = ft.TextField(
+            value="", label="Ollama model",
+            border_radius=8, border_color=BORDER, focused_border_color="#0084FF", text_size=13,
+            on_change=lambda e: self._update_draft(["global", "ollama_model"], e.control.value),
+        )
         self._agent_delay_label = ft.Text("Between agents: 2.0s", size=FONT_SETTINGS_LABEL, color=TEXT_SECONDARY)
         self._agent_delay_slider = ft.Slider(
             value=2.0, min=0.5, max=8.0, divisions=15,
@@ -469,7 +474,7 @@ class SettingsPanel(ft.Container):
             _section_header("🌐 Global"),
             ft.Container(
                 content=ft.Column(controls=[
-                    self._api_key_field, self._ollama_field,
+                    self._api_key_field, self._ollama_field, self._ollama_model_field,
                     self._agent_delay_label, self._agent_delay_slider,
                     self._round_delay_label, self._round_delay_slider,
                 ], spacing=SPACE_SM),
@@ -588,6 +593,7 @@ class SettingsPanel(ft.Container):
         glb = self._draft.get("global", {})
         self._api_key_field.value = glb.get("claude_api_key", "")
         self._ollama_field.value = glb.get("ollama_url", "http://localhost:11434")
+        self._ollama_model_field.value = glb.get("ollama_model", "zephyr:7b-alpha-q4_K_M")
         self._agent_delay_label.value = f"Between agents: {glb.get('inter_agent_delay', 2.0):.1f}s"
         self._agent_delay_slider.value = glb.get("inter_agent_delay", 2.0)
         self._round_delay_label.value = f"Between rounds: {glb.get('inter_round_delay', 4.0):.1f}s"

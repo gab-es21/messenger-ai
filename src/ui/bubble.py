@@ -150,6 +150,13 @@ class AgentBubble(ft.Container):
         self._bubble.offset = ft.Offset(0, 0)
         self._bubble.update()
 
+    def append_chunk(self, chunk: str):
+        """Append a streamed text chunk — used during live AI responses."""
+        txt = self._bubble.content
+        txt.value = (txt.value or "") + chunk
+        if txt.page:
+            txt.update()
+
 
 class SystemMessage(ft.Container):
     def __init__(self, text: str):

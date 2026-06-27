@@ -44,6 +44,7 @@ class ChatWindow(ft.Stack):
     def __init__(self):
         self._thoughts_on = True
         self._autonomous_running = False
+        self._agents_running = False
         self._demo_loaded = False
         self._message_log: list[dict] = []   # stored for font-size rebuild
 
@@ -197,10 +198,69 @@ class ChatWindow(ft.Stack):
 
         self._demo_loaded = True
 
-    # ── User input ────────────────────────────────────────────────────────────
+    # ── User input + agent responses ─────────────────────────────────────────
 
     def _handle_user_send(self, text: str):
+        if self._agents_running:
+            return
         self._add_user(text)
+        if self.page:
+            self.page.run_task(self._run_agent_responses, text)
+
+    async def _run_agent_responses(self, _user_message: str):
+        from data.settings_store import SettingsStore
+        from agents.runner import run_agent_turn
+
+        store = SettingsStore.instance()
+        enabled = [a for a in store.agents if a.get("enabled")]
+        if not enabled:
+            self._add_system("No agents are enabled — turn on at least one in Settings.")
+            return
+
+        self._agents_running = True
+        self._input.set_disabled(True, "Agents are thinking…")
+
+        prev_id = None
+        for agent in enabled:
+            indicator = TypingIndicator(agent["name"], agent["color"])
+            self._chat.add(indicator)
+            await asyncio.sleep(0.6)
+            self._chat.remove(indicator)
+
+            show_name = prev_id != agent["id"]
+            bubble = AgentBubble(
+                content="",
+                agent_name=agent["name"],
+                agent_color=agent["color"],
+                show_name=show_name,
+                font_size=self._effective_font_size(),
+            )
+            bubble._bubble.opacity = 1
+            bubble._bubble.offset = ft.Offset(0, 0)
+            self._chat.add(bubble)
+
+            full_text = ""
+            async for chunk in run_agent_turn(agent, self._message_log, store.global_cfg):
+                bubble.append_chunk(chunk)
+                full_text += chunk
+
+            self._message_log.append({
+                "type": "agent",
+                "agent_id": agent["id"],
+                "agent_name": agent["name"],
+                "agent_color": agent["color"],
+                "content": full_text,
+                "show_name": show_name,
+            })
+
+            prev_id = agent["id"]
+            delay = store.global_cfg.get("inter_agent_delay", 2.0)
+            if delay > 0 and agent is not enabled[-1]:
+                await asyncio.sleep(delay)
+
+        self._agents_running = False
+        self._input.set_disabled(False)
+        self._input.focus()
 
     # ── Autonomous mode ───────────────────────────────────────────────────────
 
