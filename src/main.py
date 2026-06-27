@@ -36,4 +36,4 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
     log.info("Launching Prism via ft.run()")
-    ft.run(target=main)
+    ft.run(main)
