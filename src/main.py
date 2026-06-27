@@ -11,7 +11,7 @@ log = get_logger(__name__)
 def main(page: ft.Page):
     log.info("main() called — setting up page")
     try:
-        page.title = "Roundtable"
+        page.title = "Round Table"
         page.bgcolor = BG_PRIMARY
         page.padding = 0
         page.spacing = 0
@@ -35,5 +35,5 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    log.info("Launching Roundtable via ft.run()")
+    log.info("Launching Round Table via ft.run()")
     ft.run(main)

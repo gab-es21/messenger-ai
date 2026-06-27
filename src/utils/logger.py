@@ -1,5 +1,5 @@
 """
-Centralised logging for Roundtable.
+Centralised logging for Round Table.
 Every module gets a child logger via get_logger(__name__).
 All output goes to both the terminal and logs/app.log.
 """
@@ -33,7 +33,7 @@ def _setup() -> logging.Logger:
     root.propagate = False
 
     root.info("─" * 60)
-    root.info("Roundtable starting — log file: %s", LOG_FILE)
+    root.info("Round Table starting — log file: %s", LOG_FILE)
     return root
 
 

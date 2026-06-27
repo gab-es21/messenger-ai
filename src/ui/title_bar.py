@@ -44,7 +44,14 @@ class TitleBar(ft.Container):
 
         drag_area = ft.WindowDragArea(
             content=ft.Row(
-                controls=[ft.Text("Roundtable", size=FONT_SECTION_TITLE, weight=ft.FontWeight.W_700, color=TEXT_PRIMARY)],
+                controls=[
+                    ft.Text("🧠", size=16),
+                    ft.Container(width=6),
+                    ft.Text("Round Table", size=FONT_SECTION_TITLE, weight=ft.FontWeight.W_700, color=TEXT_PRIMARY),
+                ],
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                tight=True,
+                spacing=0,
             ),
             expand=True,
         )
@@ -54,7 +61,7 @@ class TitleBar(ft.Container):
             icon_color=TEXT_SECONDARY,
             icon_size=18,
             tooltip="Close",
-            on_click=lambda e: e.page.window.close(),
+            on_click=lambda e: e.page.window.destroy(),
         )
 
         super().__init__(
