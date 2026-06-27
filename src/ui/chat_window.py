@@ -19,9 +19,9 @@ from ui.input_bar import InputBar
 
 # ── Demo data ─────────────────────────────────────────────────────────────────
 DEMO_AGENTS = [
-    {"id": "agent_1", "name": "Devil's Advocate 😈", "color": AGENT_COLORS[0]},
-    {"id": "agent_2", "name": "Optimist 🌟",          "color": AGENT_COLORS[1]},
-    {"id": "agent_3", "name": "Realist 🔍",           "color": AGENT_COLORS[2]},
+    {"id": "agent_1", "name": "Devil's Advocate 😈", "color": AGENT_COLORS[3]},  # dark red
+    {"id": "agent_2", "name": "Optimist 🌟",          "color": AGENT_COLORS[0]},  # green
+    {"id": "agent_3", "name": "Realist 🔍",           "color": AGENT_COLORS[1]},  # violet
 ]
 
 DEMO_MESSAGES = [
