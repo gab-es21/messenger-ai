@@ -27,12 +27,12 @@ INFO = "#0084FF"
 
 # ── Agent color pool (index 0-5) ─────────────────────────────────────────────
 AGENT_COLORS = [
-    "#FF6B6B",  # Coral
-    "#4ECDC4",  # Teal
-    "#9B8EC4",  # Lavender
-    "#6BAE8E",  # Sage
-    "#E8A838",  # Amber
-    "#5A7FA8",  # Slate
+    "#2DA44E",  # A2 GitHub green
+    "#8957E5",  # A3 Rich violet
+    "#D35400",  # B4 Burnt orange
+    "#B03A2E",  # C1 Dark red
+    "#6C3483",  # C3 Deep purple
+    "#1B7EB3",  # fallback steel blue (6th slot)
 ]
 
 # ── Layout ───────────────────────────────────────────────────────────────────
