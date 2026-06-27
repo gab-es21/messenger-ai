@@ -319,7 +319,7 @@ class SettingsPanel(ft.Container):
         # Draft is a deep copy; original is snapshot at open time for cancel
         self._draft: dict = {}
         self._original: dict = {}
-        self._dirty = False
+        self._has_changes = False
 
         # Build UI first (will be populated on open)
         self._body = self._build_body()
@@ -486,7 +486,7 @@ class SettingsPanel(ft.Container):
     def open(self):
         self._draft = copy.deepcopy(self._store._data)
         self._original = copy.deepcopy(self._store._data)
-        self._dirty = False
+        self._has_changes = False
         self._sync_controls_from_draft()
         self.visible = True
         self.offset = ft.Offset(0, 0)
@@ -505,7 +505,7 @@ class SettingsPanel(ft.Container):
         self.update()
 
     def _handle_close(self):
-        if self._dirty:
+        if self._has_changes:
             self._do_cancel()
         self._on_close_cb()
 
@@ -533,7 +533,7 @@ class SettingsPanel(ft.Container):
 
         # Rebuild agent tiles from draft
         self._agents_col.controls = [
-            _AgentTile(i, self._draft["agents"][i], self._mark_dirty)
+            _AgentTile(i, self._draft["agents"][i], self._mark_has_changes)
             for i in range(5)
         ]
 
@@ -541,9 +541,9 @@ class SettingsPanel(ft.Container):
 
     # ── Dirty tracking ────────────────────────────────────────────────────────
 
-    def _mark_dirty(self):
-        if not self._dirty:
-            self._dirty = True
+    def _mark_has_changes(self):
+        if not self._has_changes:
+            self._has_changes = True
             self._footer.visible = True
             self._footer.update()
 
@@ -552,7 +552,7 @@ class SettingsPanel(ft.Container):
         for key in path[:-1]:
             node = node[key]
         node[path[-1]] = value
-        self._mark_dirty()
+        self._mark_has_changes()
 
     # ── Appearance handlers ───────────────────────────────────────────────────
 
@@ -596,7 +596,7 @@ class SettingsPanel(ft.Container):
     def _handle_save(self, e):
         self._store._data = copy.deepcopy(self._draft)
         self._store.save()
-        self._dirty = False
+        self._has_changes = False
         self._footer.visible = False
         self._footer.update()
         self._on_save_cb(self._store)
@@ -608,6 +608,6 @@ class SettingsPanel(ft.Container):
 
     def _do_cancel(self):
         self._draft = copy.deepcopy(self._original)
-        self._dirty = False
+        self._has_changes = False
         self._footer.visible = False
         self._on_appearance_revert(self._original["appearance"])
