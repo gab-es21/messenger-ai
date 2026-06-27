@@ -96,4 +96,4 @@ def test_runner_ollama_connection_error_yields_error():
     cfg = {"ollama_url": "http://localhost:1", "ollama_model": "fake"}
     chunks = _collect(run_agent_turn(agent, log, cfg))
     assert len(chunks) == 1
-    assert "Error" in chunks[0]
+    assert "not running" in chunks[0] or "Error" in chunks[0]

@@ -55,6 +55,12 @@ class ChatArea(ft.Container):
             self._list.controls.remove(control)
             self._list.update()
 
+    def replace(self, old: ft.Control, new: ft.Control):
+        if old in self._list.controls:
+            idx = self._list.controls.index(old)
+            self._list.controls[idx] = new
+            self._list.update()
+
     def clear(self):
         self._list.controls.clear()
         self._has_messages = False

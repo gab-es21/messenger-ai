@@ -74,5 +74,12 @@ async def run_agent_turn(agent: dict, message_log: list[dict], global_cfg: dict)
 
     except Exception as exc:
         log.error("Agent %s failed: %s", agent.get("id"), exc)
+        try:
+            import httpx
+            if isinstance(exc, httpx.ConnectError):
+                yield "[Ollama is not running — start it with: python scripts/start_ollama.py]"
+                return
+        except ImportError:
+            pass
         short = str(exc)[:120]
         yield f"[Error: {type(exc).__name__}: {short}]"

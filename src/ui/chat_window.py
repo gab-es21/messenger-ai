@@ -45,7 +45,6 @@ class ChatWindow(ft.Stack):
         self._thoughts_on = True
         self._autonomous_running = False
         self._agents_running = False
-        self._demo_loaded = False
         self._message_log: list[dict] = []   # stored for font-size rebuild
 
         self._chat = ChatArea()
@@ -74,9 +73,6 @@ class ChatWindow(ft.Stack):
             controls=[self._main, self._settings_panel],
             expand=True,
         )
-
-    def did_mount(self):
-        self.page.run_task(self._load_demo)
 
     # ── Effective font size ───────────────────────────────────────────────────
 
@@ -220,43 +216,59 @@ class ChatWindow(ft.Stack):
         self._agents_running = True
         self._input.set_disabled(True, "Agents are thinking…")
 
-        prev_id = None
-        for agent in enabled:
-            indicator = TypingIndicator(agent["name"], agent["color"])
-            self._chat.add(indicator)
-            await asyncio.sleep(0.6)
-            self._chat.remove(indicator)
+        # Snapshot log before any agent replies — all agents see the same context
+        log_snapshot = list(self._message_log)
 
-            show_name = prev_id != agent["id"]
+        # Place all typing indicators upfront so order is fixed
+        indicators: dict[str, TypingIndicator] = {}
+        for agent in enabled:
+            ind = TypingIndicator(agent["name"], agent["color"])
+            self._chat.add(ind)
+            indicators[agent["id"]] = ind
+
+        results: dict[str, dict] = {}
+
+        async def _stream_one(agent: dict):
+            agent_id = agent["id"]
+            indicator = indicators[agent_id]
+
             bubble = AgentBubble(
                 content="",
                 agent_name=agent["name"],
                 agent_color=agent["color"],
-                show_name=show_name,
+                show_name=True,
                 font_size=self._effective_font_size(),
             )
             bubble._bubble.opacity = 1
             bubble._bubble.offset = ft.Offset(0, 0)
-            self._chat.add(bubble)
 
             full_text = ""
-            async for chunk in run_agent_turn(agent, self._message_log, store.global_cfg):
+            replaced = False
+            async for chunk in run_agent_turn(agent, log_snapshot, store.global_cfg):
+                if not replaced:
+                    self._chat.replace(indicator, bubble)
+                    replaced = True
                 bubble.append_chunk(chunk)
                 full_text += chunk
 
-            self._message_log.append({
+            if not replaced:
+                self._chat.remove(indicator)
+
+            results[agent_id] = {
                 "type": "agent",
-                "agent_id": agent["id"],
+                "agent_id": agent_id,
                 "agent_name": agent["name"],
                 "agent_color": agent["color"],
                 "content": full_text,
-                "show_name": show_name,
-            })
+                "show_name": True,
+            }
 
-            prev_id = agent["id"]
-            delay = store.global_cfg.get("inter_agent_delay", 2.0)
-            if delay > 0 and agent is not enabled[-1]:
-                await asyncio.sleep(delay)
+        await asyncio.gather(*[_stream_one(a) for a in enabled])
+
+        for agent in enabled:
+            entry = results.get(agent["id"])
+            if entry and entry["content"]:
+                self._message_log.append(entry)
 
         self._agents_running = False
         self._input.set_disabled(False)
