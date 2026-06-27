@@ -106,6 +106,33 @@ class TestAlignment:
         assert c is not None
 
 
+class TestContainer:
+    def test_no_max_width_param(self):
+        """ft.Container has no max_width in 0.85 — omit it."""
+        import inspect
+        params = set(inspect.signature(ft.Container.__init__).parameters.keys())
+        assert "max_width" not in params
+
+    def test_has_width_and_height(self):
+        import inspect
+        params = set(inspect.signature(ft.Container.__init__).parameters.keys())
+        assert "width" in params and "height" in params
+
+    def test_construction_with_all_bubble_kwargs(self):
+        c = ft.Container(
+            content=ft.Text("hello"),
+            bgcolor="#0084FF",
+            border_radius=ft.BorderRadius(18, 18, 18, 4),
+            padding=ft.Padding(left=12, right=12, top=8, bottom=8),
+            shadow=ft.BoxShadow(spread_radius=0, blur_radius=3, color="#00000014", offset=ft.Offset(0, 1)),
+            animate_opacity=ft.Animation(200, ft.AnimationCurve.EASE_OUT),
+            animate_offset=ft.Animation(200, ft.AnimationCurve.EASE_OUT),
+            offset=ft.Offset(0, 0.3),
+            opacity=0,
+        )
+        assert c is not None
+
+
 class TestIcons:
     def test_icons_proxy_exists(self):
         assert hasattr(ft, "Icons")
