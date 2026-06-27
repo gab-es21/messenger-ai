@@ -28,7 +28,6 @@ def _bubble_pad():
 class UserBubble(ft.Container):
     def __init__(self, content: str, timestamp: str = ""):
         bubble = ft.Container(
-            expand_loose=True,
             content=ft.Text(content, color=TEXT_INVERSE, size=FONT_BUBBLE, selectable=True),
             bgcolor=USER_BUBBLE,
             border_radius=ft.BorderRadius(
@@ -43,20 +42,25 @@ class UserBubble(ft.Container):
             opacity=0,
         )
 
-        col_controls = [
-            ft.Row(controls=[bubble], alignment=ft.MainAxisAlignment.END),
-        ]
+        col_controls = [bubble]
         if timestamp:
             col_controls.append(
-                ft.Row(
-                    controls=[ft.Text(timestamp, size=FONT_TIMESTAMP, color=TEXT_SECONDARY)],
-                    alignment=ft.MainAxisAlignment.END,
+                ft.Text(
+                    timestamp,
+                    size=FONT_TIMESTAMP,
+                    color=TEXT_SECONDARY,
+                    text_align=ft.TextAlign.RIGHT,
                 )
             )
 
         super().__init__(
             expand=True,
-            content=ft.Column(controls=col_controls, tight=True, spacing=SPACE_XS),
+            content=ft.Column(
+                controls=col_controls,
+                horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+                tight=True,
+                spacing=SPACE_XS,
+            ),
             padding=ft.Padding(left=80, right=SPACE_SM, top=2, bottom=2),
         )
         self._bubble = bubble
@@ -79,7 +83,6 @@ class AgentBubble(ft.Container):
         on_show_thought: callable = None,
     ):
         bubble = ft.Container(
-            expand_loose=True,
             content=ft.Text(content, color=TEXT_INVERSE, size=FONT_BUBBLE, selectable=True),
             bgcolor=agent_color,
             border_radius=ft.BorderRadius(
@@ -102,26 +105,41 @@ class AgentBubble(ft.Container):
                 ft.Row(
                     controls=[
                         ft.Container(width=8, height=8, bgcolor=agent_color, border_radius=4),
-                        ft.Text(agent_name, size=FONT_AGENT_NAME, weight=ft.FontWeight.W_600, color=agent_color),
+                        ft.Text(
+                            agent_name,
+                            size=FONT_AGENT_NAME,
+                            weight=ft.FontWeight.W_600,
+                            color=agent_color,
+                        ),
                     ],
-                    tight=True, spacing=SPACE_XS,
+                    tight=True,
+                    spacing=SPACE_XS,
                 )
             )
-        controls.append(ft.Row(controls=[bubble], alignment=ft.MainAxisAlignment.START))
+        controls.append(bubble)
         if timestamp:
-            controls.append(ft.Text(timestamp, size=FONT_TIMESTAMP, color=TEXT_SECONDARY))
+            controls.append(
+                ft.Text(timestamp, size=FONT_TIMESTAMP, color=TEXT_SECONDARY)
+            )
         if has_thought and on_show_thought:
             controls.append(
                 ft.TextButton(
                     content=ft.Text("💭 Show thought", size=11, color=agent_color),
                     on_click=lambda e: on_show_thought(),
-                    style=ft.ButtonStyle(padding=ft.Padding(left=0, right=0, top=0, bottom=0)),
+                    style=ft.ButtonStyle(
+                        padding=ft.Padding(left=0, right=0, top=0, bottom=0)
+                    ),
                 )
             )
 
         super().__init__(
             expand=True,
-            content=ft.Column(controls=controls, tight=True, spacing=SPACE_XS),
+            content=ft.Column(
+                controls=controls,
+                horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+                tight=True,
+                spacing=SPACE_XS,
+            ),
             padding=ft.Padding(left=SPACE_SM, right=80, top=2, bottom=2),
         )
         self._bubble = bubble
