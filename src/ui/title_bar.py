@@ -1,7 +1,7 @@
 import flet as ft
 from ui.theme import (
     BG_PRIMARY, BORDER, TEXT_PRIMARY, TEXT_SECONDARY,
-    TITLE_BAR_HEIGHT, FONT_SECTION_TITLE
+    TITLE_BAR_HEIGHT, FONT_SECTION_TITLE,
 )
 
 
@@ -29,14 +29,7 @@ class TitleBar(ft.Container):
 
         drag_area = ft.WindowDragArea(
             content=ft.Row(
-                controls=[
-                    ft.Text(
-                        "Prism",
-                        size=FONT_SECTION_TITLE,
-                        weight=ft.FontWeight.W_700,
-                        color=TEXT_PRIMARY,
-                    ),
-                ],
+                controls=[ft.Text("Prism", size=FONT_SECTION_TITLE, weight=ft.FontWeight.W_700, color=TEXT_PRIMARY)],
             ),
             expand=True,
         )
@@ -57,8 +50,8 @@ class TitleBar(ft.Container):
             ),
             height=TITLE_BAR_HEIGHT,
             bgcolor=BG_PRIMARY,
-            border=ft.border.only(bottom=ft.BorderSide(1, BORDER)),
-            padding=ft.padding.only(left=16, right=4),
+            border=ft.border.Border(bottom=ft.BorderSide(1, BORDER)),
+            padding=ft.Padding(left=16, right=4, top=0, bottom=0),
         )
 
     def _handle_thoughts(self, e):

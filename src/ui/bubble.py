@@ -5,7 +5,7 @@ from ui.theme import (
     BUBBLE_RADIUS, BUBBLE_RADIUS_CORNER,
     BUBBLE_MAX_WIDTH, BUBBLE_SHADOW_BLUR, BUBBLE_SHADOW_COLOR,
     FONT_BUBBLE, FONT_AGENT_NAME, FONT_TIMESTAMP,
-    SPACE_XS, SPACE_SM, ANIM_BUBBLE_MS
+    SPACE_XS, SPACE_SM, ANIM_BUBBLE_MS,
 )
 
 
@@ -18,25 +18,23 @@ def _shadow():
     )
 
 
-class UserBubble(ft.Container):
-    """Right-aligned blue bubble for user messages."""
+def _bubble_pad():
+    return ft.Padding(
+        left=BUBBLE_PADDING_H, right=BUBBLE_PADDING_H,
+        top=BUBBLE_PADDING_V, bottom=BUBBLE_PADDING_V,
+    )
 
+
+class UserBubble(ft.Container):
     def __init__(self, content: str, timestamp: str = ""):
         bubble = ft.Container(
-            content=ft.Text(
-                content,
-                color=TEXT_INVERSE,
-                size=FONT_BUBBLE,
-                selectable=True,
-            ),
+            content=ft.Text(content, color=TEXT_INVERSE, size=FONT_BUBBLE, selectable=True),
             bgcolor=USER_BUBBLE,
             border_radius=ft.BorderRadius(
-                top_left=BUBBLE_RADIUS,
-                top_right=BUBBLE_RADIUS,
-                bottom_left=BUBBLE_RADIUS,
-                bottom_right=BUBBLE_RADIUS_CORNER,
+                top_left=BUBBLE_RADIUS, top_right=BUBBLE_RADIUS,
+                bottom_left=BUBBLE_RADIUS, bottom_right=BUBBLE_RADIUS_CORNER,
             ),
-            padding=ft.padding.only(left=BUBBLE_PADDING_H, right=BUBBLE_PADDING_H, top=BUBBLE_PADDING_V, bottom=BUBBLE_PADDING_V),
+            padding=_bubble_pad(),
             shadow=_shadow(),
             max_width=BUBBLE_MAX_WIDTH,
             animate_opacity=ft.Animation(ANIM_BUBBLE_MS, ft.AnimationCurve.EASE_OUT),
@@ -45,22 +43,19 @@ class UserBubble(ft.Container):
             opacity=0,
         )
 
-        ts = ft.Text(timestamp, size=FONT_TIMESTAMP, color=TEXT_SECONDARY, visible=bool(timestamp))
+        col_controls = [bubble]
+        if timestamp:
+            col_controls.append(ft.Text(timestamp, size=FONT_TIMESTAMP, color=TEXT_SECONDARY))
 
         col = ft.Column(
-            controls=[bubble, ts] if timestamp else [bubble],
+            controls=col_controls,
             horizontal_alignment=ft.CrossAxisAlignment.END,
-            tight=True,
-            spacing=SPACE_XS,
+            tight=True, spacing=SPACE_XS,
         )
 
         super().__init__(
-            content=ft.Row(
-                controls=[col],
-                alignment=ft.MainAxisAlignment.END,
-            ),
-            padding=ft.padding.only(left=80, right=SPACE_SM, top=2, bottom=2),
-            animate_opacity=ft.Animation(ANIM_BUBBLE_MS, ft.AnimationCurve.EASE_OUT),
+            content=ft.Row(controls=[col], alignment=ft.MainAxisAlignment.END),
+            padding=ft.Padding(left=80, right=SPACE_SM, top=2, bottom=2),
         )
         self._bubble = bubble
 
@@ -71,8 +66,6 @@ class UserBubble(ft.Container):
 
 
 class AgentBubble(ft.Container):
-    """Left-aligned colored bubble for agent messages."""
-
     def __init__(
         self,
         content: str,
@@ -83,16 +76,8 @@ class AgentBubble(ft.Container):
         has_thought: bool = False,
         on_show_thought: callable = None,
     ):
-        self._agent_color = agent_color
-        self._on_show_thought = on_show_thought
-
         bubble = ft.Container(
-            content=ft.Text(
-                content,
-                color=TEXT_INVERSE,
-                size=FONT_BUBBLE,
-                selectable=True,
-            ),
+            content=ft.Text(content, color=TEXT_INVERSE, size=FONT_BUBBLE, selectable=True),
             bgcolor=agent_color,
             border_radius=ft.BorderRadius(
                 top_left=BUBBLE_RADIUS_CORNER if show_name else BUBBLE_RADIUS,
@@ -100,7 +85,7 @@ class AgentBubble(ft.Container):
                 bottom_left=BUBBLE_RADIUS,
                 bottom_right=BUBBLE_RADIUS,
             ),
-            padding=ft.padding.only(left=BUBBLE_PADDING_H, right=BUBBLE_PADDING_H, top=BUBBLE_PADDING_V, bottom=BUBBLE_PADDING_V),
+            padding=_bubble_pad(),
             shadow=_shadow(),
             max_width=BUBBLE_MAX_WIDTH,
             animate_opacity=ft.Animation(ANIM_BUBBLE_MS, ft.AnimationCurve.EASE_OUT),
@@ -110,47 +95,34 @@ class AgentBubble(ft.Container):
         )
 
         controls = []
-
         if show_name:
             controls.append(
                 ft.Row(
                     controls=[
-                        ft.Container(
-                            width=8, height=8,
-                            bgcolor=agent_color,
-                            border_radius=4,
-                        ),
-                        ft.Text(
-                            agent_name,
-                            size=FONT_AGENT_NAME,
-                            weight=ft.FontWeight.W_600,
-                            color=agent_color,
-                        ),
+                        ft.Container(width=8, height=8, bgcolor=agent_color, border_radius=4),
+                        ft.Text(agent_name, size=FONT_AGENT_NAME, weight=ft.FontWeight.W_600, color=agent_color),
                     ],
-                    tight=True,
-                    spacing=SPACE_XS,
+                    tight=True, spacing=SPACE_XS,
                 )
             )
-
         controls.append(bubble)
-
         if timestamp:
             controls.append(ft.Text(timestamp, size=FONT_TIMESTAMP, color=TEXT_SECONDARY))
-
-        if has_thought:
+        if has_thought and on_show_thought:
             controls.append(
                 ft.TextButton(
                     content=ft.Text("💭 Show thought", size=11, color=agent_color),
-                    on_click=lambda e: on_show_thought() if on_show_thought else None,
-                    style=ft.ButtonStyle(padding=ft.padding.all(0)),
+                    on_click=lambda e: on_show_thought(),
+                    style=ft.ButtonStyle(padding=ft.Padding(left=0, right=0, top=0, bottom=0)),
                 )
             )
 
-        col = ft.Column(controls=controls, tight=True, spacing=SPACE_XS)
-
         super().__init__(
-            content=ft.Row(controls=[col], alignment=ft.MainAxisAlignment.START),
-            padding=ft.padding.only(left=SPACE_SM, right=80, top=2, bottom=2),
+            content=ft.Row(
+                controls=[ft.Column(controls=controls, tight=True, spacing=SPACE_XS)],
+                alignment=ft.MainAxisAlignment.START,
+            ),
+            padding=ft.Padding(left=SPACE_SM, right=80, top=2, bottom=2),
         )
         self._bubble = bubble
 
@@ -161,22 +133,18 @@ class AgentBubble(ft.Container):
 
 
 class SystemMessage(ft.Container):
-    """Centered informational line (e.g. 'Session resumed')."""
-
     def __init__(self, text: str):
-        divider_style = {"height": 1, "color": "#E8E8E8", "expand": True}
-
         super().__init__(
             content=ft.Row(
                 controls=[
-                    ft.Divider(**divider_style),
+                    ft.Divider(height=1, color="#E8E8E8"),
                     ft.Container(
                         content=ft.Text(text, size=11, color=TEXT_SECONDARY),
-                        padding=ft.padding.symmetric(horizontal=SPACE_SM),
+                        padding=ft.Padding(left=SPACE_SM, right=SPACE_SM, top=0, bottom=0),
                     ),
-                    ft.Divider(**divider_style),
+                    ft.Divider(height=1, color="#E8E8E8"),
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            padding=ft.padding.only(top=SPACE_SM, bottom=SPACE_SM),
+            padding=ft.Padding(left=0, right=0, top=SPACE_SM, bottom=SPACE_SM),
         )

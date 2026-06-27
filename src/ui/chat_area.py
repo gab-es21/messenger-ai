@@ -3,19 +3,12 @@ from ui.theme import BG_PRIMARY, TEXT_SECONDARY, SPACE_MD
 
 
 class EmptyState(ft.Container):
-    """Shown when there are no messages yet."""
-
     def __init__(self):
         super().__init__(
             content=ft.Column(
                 controls=[
                     ft.Text("💬", size=48),
-                    ft.Text(
-                        "Start a brainstorm",
-                        size=16,
-                        weight=ft.FontWeight.W_600,
-                        color="#1A1A1A",
-                    ),
+                    ft.Text("Start a brainstorm", size=16, weight=ft.FontWeight.W_600, color="#1A1A1A"),
                     ft.Text(
                         "Type a message below, or press Start\nto let agents talk on their own.",
                         size=13,
@@ -33,44 +26,31 @@ class EmptyState(ft.Container):
 
 
 class ChatArea(ft.Container):
-    """
-    Scrollable message list.
-    Add controls via add() — handles auto-scroll and empty-state toggling.
-    """
-
     def __init__(self):
         self._list = ft.ListView(
             expand=True,
             spacing=4,
-            padding=ft.padding.only(left=SPACE_MD, right=SPACE_MD, top=12, bottom=12),
+            padding=ft.Padding(left=SPACE_MD, right=SPACE_MD, top=12, bottom=12),
             auto_scroll=True,
         )
         self._empty = EmptyState()
         self._has_messages = False
 
         super().__init__(
-            content=ft.Stack(
-                controls=[self._empty, self._list],
-                expand=True,
-            ),
+            content=ft.Stack(controls=[self._empty, self._list], expand=True),
             expand=True,
             bgcolor=BG_PRIMARY,
         )
 
-    # ── Public API ────────────────────────────────────────────────────────────
-
     def add(self, control: ft.Control):
-        """Append a bubble, indicator, or system message and scroll into view."""
         if not self._has_messages:
             self._has_messages = True
             self._empty.visible = False
             self._empty.update()
-
         self._list.controls.append(control)
         self._list.update()
 
     def remove(self, control: ft.Control):
-        """Remove a control (e.g. swap typing indicator for real bubble)."""
         if control in self._list.controls:
             self._list.controls.remove(control)
             self._list.update()
@@ -81,6 +61,3 @@ class ChatArea(ft.Container):
         self._empty.visible = True
         self._list.update()
         self._empty.update()
-
-    def scroll_to_bottom(self):
-        self._list.scroll_to(offset=-1, duration=200)

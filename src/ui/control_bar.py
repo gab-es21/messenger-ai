@@ -2,17 +2,15 @@ import asyncio
 import flet as ft
 from ui.theme import (
     BG_CONTROL_BAR, BORDER, TEXT_SECONDARY,
-    CONTROL_BAR_HEIGHT, SUCCESS, ERROR, WARNING
+    CONTROL_BAR_HEIGHT, SUCCESS, ERROR, WARNING,
 )
 
 
 class ControlBar(ft.Container):
-    """Start / Stop bar for autonomous conversation mode."""
-
     def __init__(self, on_start: callable, on_stop: callable):
         self._on_start = on_start
         self._on_stop = on_stop
-        self._mode = "idle"   # idle | running | stopping
+        self._mode = "idle"
 
         self._start_btn = ft.ElevatedButton(
             content=ft.Row(
@@ -20,15 +18,14 @@ class ControlBar(ft.Container):
                     ft.Icon(ft.icons.PLAY_ARROW_ROUNDED, color="#FFFFFF", size=16),
                     ft.Text("Start", color="#FFFFFF", size=13, weight=ft.FontWeight.W_600),
                 ],
-                tight=True,
-                spacing=4,
+                tight=True, spacing=4,
             ),
             bgcolor=SUCCESS,
             elevation=0,
             style=ft.ButtonStyle(
                 shape=ft.RoundedRectangleBorder(radius=8),
-                padding=ft.padding.only(left=14, right=14, top=8, bottom=8),
-                overlay_color="#FFFFFF26",  # white at 15% opacity
+                padding=ft.Padding(left=14, right=14, top=8, bottom=8),
+                overlay_color="#FFFFFF26",
             ),
             on_click=self._handle_click,
         )
@@ -42,10 +39,8 @@ class ControlBar(ft.Container):
 
         self._status_text = ft.Text(
             "Agents are idle — press Start to begin",
-            size=12,
-            color=TEXT_SECONDARY,
+            size=12, color=TEXT_SECONDARY,
         )
-
         self._round_label = ft.Text("", size=12, color=TEXT_SECONDARY)
 
         super().__init__(
@@ -66,14 +61,12 @@ class ControlBar(ft.Container):
             ),
             height=CONTROL_BAR_HEIGHT,
             bgcolor=BG_CONTROL_BAR,
-            border=ft.border.only(
+            border=ft.border.Border(
                 top=ft.BorderSide(1, BORDER),
                 bottom=ft.BorderSide(1, BORDER),
             ),
-            padding=ft.padding.only(left=16, right=16),
+            padding=ft.Padding(left=16, right=16, top=0, bottom=0),
         )
-
-    # ── Public API ────────────────────────────────────────────────────────────
 
     def set_running(self, round_num: int = 1):
         self._mode = "running"
@@ -89,7 +82,8 @@ class ControlBar(ft.Container):
         self._status_text.value = "Agents are talking..."
         self._round_label.value = f"Round {round_num}"
         self.update()
-        self._start_dot_pulse()
+        if self.page:
+            self.page.run_task(self._pulse_dot)
 
     def set_stopping(self):
         self._mode = "stopping"
@@ -120,23 +114,17 @@ class ControlBar(ft.Container):
         self._round_label.value = f"Round {round_num}"
         self.update()
 
-    # ── Internals ─────────────────────────────────────────────────────────────
-
     def _handle_click(self, e):
         if self._mode == "idle":
             self._on_start()
         elif self._mode == "running":
             self._on_stop()
 
-    def _start_dot_pulse(self):
-        async def pulse():
-            while self._mode == "running":
-                self._status_dot.opacity = 0.3
-                self._status_dot.update()
-                await asyncio.sleep(0.6)
-                self._status_dot.opacity = 1.0
-                self._status_dot.update()
-                await asyncio.sleep(0.6)
-
-        if self.page:
-            self.page.run_task(pulse)
+    async def _pulse_dot(self):
+        while self._mode == "running":
+            self._status_dot.opacity = 0.3
+            self._status_dot.update()
+            await asyncio.sleep(0.6)
+            self._status_dot.opacity = 1.0
+            self._status_dot.update()
+            await asyncio.sleep(0.6)
