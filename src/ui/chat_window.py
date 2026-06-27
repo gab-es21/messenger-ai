@@ -1,6 +1,6 @@
 """
-Main layout: assembles TitleBar + ControlBar + ChatArea + InputBar.
-Phase 1: wired to demo messages only — no real AI calls.
+Main layout: Stack containing the full-window Column + settings overlay.
+Phase 1: demo messages.  Phase 2: settings panel wired.
 """
 import asyncio
 import traceback
@@ -8,14 +8,15 @@ import flet as ft
 
 from utils.logger import get_logger
 from ui.theme import BG_PRIMARY, AGENT_COLORS
-
-log = get_logger(__name__)
 from ui.title_bar import TitleBar
 from ui.control_bar import ControlBar
 from ui.chat_area import ChatArea
 from ui.bubble import AgentBubble, UserBubble, SystemMessage
 from ui.typing_indicator import TypingIndicator
 from ui.input_bar import InputBar
+from ui.settings_panel import SettingsPanel
+
+log = get_logger(__name__)
 
 # ── Demo data ─────────────────────────────────────────────────────────────────
 DEMO_AGENTS = [
@@ -36,8 +37,8 @@ DEMO_MESSAGES = [
 ]
 
 
-class ChatWindow(ft.Column):
-    """Root UI component — full window layout."""
+class ChatWindow(ft.Stack):
+    """Root UI component — full window layout with settings overlay."""
 
     def __init__(self):
         self._thoughts_on = True
@@ -48,15 +49,26 @@ class ChatWindow(ft.Column):
         self._input = InputBar(on_send=self._handle_user_send)
         self._control = ControlBar(on_start=self._handle_start, on_stop=self._handle_stop)
         self._title = TitleBar(
-            on_settings=self._handle_settings,
+            on_settings=self._open_settings,
             on_toggle_thoughts=self._handle_toggle_thoughts,
             thoughts_on=self._thoughts_on,
         )
 
-        super().__init__(
+        self._main = ft.Column(
             controls=[self._title, self._control, self._chat, self._input],
             expand=True,
             spacing=0,
+        )
+
+        self._settings_panel = SettingsPanel(
+            on_close=self._close_settings,
+            on_save=self._handle_settings_save,
+            on_appearance_change=self._apply_appearance,
+        )
+
+        super().__init__(
+            controls=[self._main, self._settings_panel],
+            expand=True,
         )
 
     def did_mount(self):
@@ -65,7 +77,6 @@ class ChatWindow(ft.Column):
     # ── Demo loader ───────────────────────────────────────────────────────────
 
     async def _load_demo(self):
-        """Replay demo messages with pacing to show the UI in action."""
         log.info("Loading demo conversation")
         try:
             await asyncio.sleep(0.3)
@@ -88,12 +99,10 @@ class ChatWindow(ft.Column):
                 agent = msg["agent"]
                 show_name = prev_sender != agent["id"]
 
-                # Show typing indicator
                 indicator = TypingIndicator(agent["name"], agent["color"])
                 self._chat.add(indicator)
                 await asyncio.sleep(1.5)
 
-                # Swap for real bubble
                 self._chat.remove(indicator)
                 bubble = AgentBubble(
                     content=msg["content"],
@@ -111,30 +120,44 @@ class ChatWindow(ft.Column):
 
     def _handle_user_send(self, text: str):
         self._chat.add(UserBubble(content=text))
-        # Phase 1: just echo — no AI call yet
-        # Phase 3 will wire up the real agent runner here
 
     # ── Autonomous mode ───────────────────────────────────────────────────────
 
     def _handle_start(self):
         self._autonomous_running = True
         self._control.set_running(round_num=1)
-        self._input.set_disabled(False)
-        # Phase 7 will wire the real autonomous loop here
         self._chat.add(SystemMessage("Autonomous mode started — agents are thinking..."))
 
     def _handle_stop(self):
         self._autonomous_running = False
         self._control.set_stopping()
-        # Immediately go idle in Phase 1 (no active generation to wait for)
         self._control.set_idle()
         self._chat.add(SystemMessage("Autonomous mode stopped."))
 
     # ── Settings ──────────────────────────────────────────────────────────────
 
-    def _handle_settings(self):
-        # Phase 2 will render the settings panel here
-        self._chat.add(SystemMessage("⚙ Settings panel — coming in Phase 2"))
+    def _open_settings(self):
+        self._settings_panel.open()
+
+    def _close_settings(self):
+        self._settings_panel.close()
+
+    def _handle_settings_save(self, store):
+        log.info("Settings saved")
+        self._chat.add(SystemMessage("✓ Settings saved."))
+
+    def _apply_appearance(self, appearance: dict):
+        """Live-apply font, zoom changes without restarting."""
+        zoom = appearance.get("zoom", 1.0)
+        self._chat.scale = zoom
+        self._chat.update()
+
+        font_family = appearance.get("font_family", "Roboto")
+        if self.page:
+            self.page.theme = ft.Theme(font_family=font_family)
+            self.page.update()
+
+    # ── Thoughts toggle ───────────────────────────────────────────────────────
 
     def _handle_toggle_thoughts(self, enabled: bool):
         self._thoughts_on = enabled
