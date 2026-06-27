@@ -6,9 +6,16 @@ from ui.theme import (
 
 
 class TitleBar(ft.Container):
-    def __init__(self, on_settings: callable, on_toggle_thoughts: callable, thoughts_on: bool = True):
+    def __init__(
+        self,
+        on_settings: callable,
+        on_toggle_thoughts: callable,
+        on_clear_chat: callable,
+        thoughts_on: bool = True,
+    ):
         self._on_settings = on_settings
         self._on_toggle_thoughts = on_toggle_thoughts
+        self._on_clear_chat = on_clear_chat
         self._thoughts_on = thoughts_on
 
         self._thoughts_btn = ft.IconButton(
@@ -17,6 +24,14 @@ class TitleBar(ft.Container):
             icon_size=20,
             tooltip="Toggle thoughts panel",
             on_click=self._handle_thoughts,
+        )
+
+        self._clear_btn = ft.IconButton(
+            icon=ft.Icons.DELETE_OUTLINE,
+            icon_color=TEXT_SECONDARY,
+            icon_size=20,
+            tooltip="Clear chat (keeps agent memories)",
+            on_click=self._handle_clear,
         )
 
         self._settings_btn = ft.IconButton(
@@ -44,7 +59,7 @@ class TitleBar(ft.Container):
 
         super().__init__(
             content=ft.Row(
-                controls=[drag_area, self._thoughts_btn, self._settings_btn, close_btn],
+                controls=[drag_area, self._thoughts_btn, self._clear_btn, self._settings_btn, close_btn],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=0,
             ),
@@ -64,3 +79,6 @@ class TitleBar(ft.Container):
         self._settings_btn.icon_color = "#0084FF"
         self._settings_btn.update()
         self._on_settings()
+
+    def _handle_clear(self, e):
+        self._on_clear_chat()

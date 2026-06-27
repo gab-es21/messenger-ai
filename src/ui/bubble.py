@@ -26,9 +26,9 @@ def _bubble_pad():
 
 
 class UserBubble(ft.Container):
-    def __init__(self, content: str, timestamp: str = ""):
+    def __init__(self, content: str, timestamp: str = "", font_size: int = FONT_BUBBLE):
         bubble = ft.Container(
-            content=ft.Text(content, color=TEXT_INVERSE, size=FONT_BUBBLE, selectable=True),
+            content=ft.Text(content, color=TEXT_INVERSE, size=font_size, selectable=True),
             bgcolor=USER_BUBBLE,
             border_radius=ft.BorderRadius(
                 top_left=BUBBLE_RADIUS, top_right=BUBBLE_RADIUS,
@@ -81,9 +81,10 @@ class AgentBubble(ft.Container):
         timestamp: str = "",
         has_thought: bool = False,
         on_show_thought: callable = None,
+        font_size: int = FONT_BUBBLE,
     ):
         bubble = ft.Container(
-            content=ft.Text(content, color=TEXT_INVERSE, size=FONT_BUBBLE, selectable=True),
+            content=ft.Text(content, color=TEXT_INVERSE, size=font_size, selectable=True),
             bgcolor=agent_color,
             border_radius=ft.BorderRadius(
                 top_left=BUBBLE_RADIUS_CORNER if show_name else BUBBLE_RADIUS,
