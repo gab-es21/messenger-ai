@@ -44,7 +44,7 @@ class TitleBar(ft.Container):
 
         drag_area = ft.WindowDragArea(
             content=ft.Row(
-                controls=[ft.Text("Prism", size=FONT_SECTION_TITLE, weight=ft.FontWeight.W_700, color=TEXT_PRIMARY)],
+                controls=[ft.Text("Roundtable", size=FONT_SECTION_TITLE, weight=ft.FontWeight.W_700, color=TEXT_PRIMARY)],
             ),
             expand=True,
         )
