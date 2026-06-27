@@ -84,6 +84,55 @@ class TestAnimation:
         assert hasattr(ft.AnimationCurve, "EASE_OUT")
 
 
+class TestAlignment:
+    def test_center(self):
+        a = ft.Alignment(0, 0)
+        assert a.x == 0 and a.y == 0
+
+    def test_center_right(self):
+        a = ft.Alignment(1, 0)
+        assert a.x == 1
+
+    def test_center_left(self):
+        a = ft.Alignment(-1, 0)
+        assert a.x == -1
+
+    def test_no_alignment_module_center(self):
+        """ft.alignment.center does not exist — use ft.Alignment(0, 0)."""
+        assert not hasattr(ft.alignment, "center")
+
+    def test_container_accepts_alignment(self):
+        c = ft.Container(alignment=ft.Alignment(0, 0))
+        assert c is not None
+
+
+class TestIcons:
+    def test_icons_proxy_exists(self):
+        assert hasattr(ft, "Icons")
+
+    def test_close_icon(self):
+        assert ft.Icons.CLOSE is not None
+
+    def test_send_rounded_icon(self):
+        assert ft.Icons.SEND_ROUNDED is not None
+
+    def test_settings_outlined_icon(self):
+        assert ft.Icons.SETTINGS_OUTLINED is not None
+
+    def test_play_arrow_rounded_icon(self):
+        assert ft.Icons.PLAY_ARROW_ROUNDED is not None
+
+    def test_stop_rounded_icon(self):
+        assert ft.Icons.STOP_ROUNDED is not None
+
+    def test_bubble_chart_icon(self):
+        assert ft.Icons.BUBBLE_CHART is not None
+
+    def test_no_lowercase_icons_module_attrs(self):
+        """ft.icons.X doesn't work — use ft.Icons.X (uppercase I)."""
+        assert not hasattr(ft.icons, "CLOSE")
+
+
 class TestMiscControls:
     def test_offset(self):
         o = ft.Offset(0, 0.3)

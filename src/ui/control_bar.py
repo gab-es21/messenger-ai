@@ -15,7 +15,7 @@ class ControlBar(ft.Container):
         self._start_btn = ft.ElevatedButton(
             content=ft.Row(
                 controls=[
-                    ft.Icon(ft.icons.PLAY_ARROW_ROUNDED, color="#FFFFFF", size=16),
+                    ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color="#FFFFFF", size=16),
                     ft.Text("Start", color="#FFFFFF", size=13, weight=ft.FontWeight.W_600),
                 ],
                 tight=True, spacing=4,
@@ -72,7 +72,7 @@ class ControlBar(ft.Container):
         self._mode = "running"
         self._start_btn.content = ft.Row(
             controls=[
-                ft.Icon(ft.icons.STOP_ROUNDED, color="#FFFFFF", size=16),
+                ft.Icon(ft.Icons.STOP_ROUNDED, color="#FFFFFF", size=16),
                 ft.Text("Stop", color="#FFFFFF", size=13, weight=ft.FontWeight.W_600),
             ],
             tight=True, spacing=4,
@@ -98,7 +98,7 @@ class ControlBar(ft.Container):
         self._start_btn.disabled = False
         self._start_btn.content = ft.Row(
             controls=[
-                ft.Icon(ft.icons.PLAY_ARROW_ROUNDED, color="#FFFFFF", size=16),
+                ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color="#FFFFFF", size=16),
                 ft.Text("Start", color="#FFFFFF", size=13, weight=ft.FontWeight.W_600),
             ],
             tight=True, spacing=4,

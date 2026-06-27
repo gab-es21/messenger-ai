@@ -12,7 +12,7 @@ class TitleBar(ft.Container):
         self._thoughts_on = thoughts_on
 
         self._thoughts_btn = ft.IconButton(
-            icon=ft.icons.BUBBLE_CHART,
+            icon=ft.Icons.BUBBLE_CHART,
             icon_color="#0084FF" if thoughts_on else TEXT_SECONDARY,
             icon_size=20,
             tooltip="Toggle thoughts panel",
@@ -20,7 +20,7 @@ class TitleBar(ft.Container):
         )
 
         self._settings_btn = ft.IconButton(
-            icon=ft.icons.SETTINGS_OUTLINED,
+            icon=ft.Icons.SETTINGS_OUTLINED,
             icon_color=TEXT_SECONDARY,
             icon_size=20,
             tooltip="Settings",
@@ -35,7 +35,7 @@ class TitleBar(ft.Container):
         )
 
         close_btn = ft.IconButton(
-            icon=ft.icons.CLOSE,
+            icon=ft.Icons.CLOSE,
             icon_color=TEXT_SECONDARY,
             icon_size=18,
             tooltip="Close",

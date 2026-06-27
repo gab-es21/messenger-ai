@@ -20,7 +20,7 @@ class EmptyState(ft.Container):
                 alignment=ft.MainAxisAlignment.CENTER,
                 spacing=SPACE_MD,
             ),
-            alignment=ft.alignment.center,
+            alignment=ft.Alignment(0, 0),
             expand=True,
         )
 

@@ -31,11 +31,11 @@ class InputBar(ft.Container):
         )
 
         self._send_btn = ft.Container(
-            content=ft.Icon(ft.icons.SEND_ROUNDED, color=TEXT_INVERSE, size=20),
+            content=ft.Icon(ft.Icons.SEND_ROUNDED, color=TEXT_INVERSE, size=20),
             bgcolor=SEND_BTN,
             border_radius=24,
             width=48, height=48,
-            alignment=ft.alignment.center,
+            alignment=ft.Alignment(0, 0),
             on_click=self._handle_send,
             animate_scale=ft.Animation(80, ft.AnimationCurve.EASE_IN_OUT),
         )
