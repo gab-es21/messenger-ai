@@ -37,8 +37,18 @@ def _divider() -> ft.Divider:
     return ft.Divider(height=1, color=BORDER)
 
 
+def _x_line(angle: float) -> ft.Container:
+    """One arm of the X overlay — a rounded red bar rotated to the given angle."""
+    return ft.Container(
+        width=18, height=3,
+        bgcolor="#CC2222",
+        border_radius=2,
+        rotate=ft.Rotate(angle=angle),
+    )
+
+
 class _ColorSwatch(ft.Stack):
-    """Color circle. Shows a checkmark when selected; a red slash when taken by another agent."""
+    """Color circle. Shows a checkmark when selected; an X overlay when taken by another agent."""
 
     def __init__(self, color: str, selected: bool, taken: bool, on_pick):
         self._color = color
@@ -46,6 +56,7 @@ class _ColorSwatch(ft.Stack):
         self._taken = taken
         self._selected = selected
 
+        sel_ring = selected and not taken
         self._circle = ft.Container(
             width=28, height=28,
             bgcolor=color,
@@ -54,24 +65,28 @@ class _ColorSwatch(ft.Stack):
             content=ft.Text(
                 "✓", size=11, color="#FFFFFF",
                 weight=ft.FontWeight.W_700,
-                visible=selected and not taken,
+                visible=sel_ring,
             ),
             border=ft.border.Border(
-                top=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
-                bottom=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
-                left=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
-                right=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
+                top=ft.BorderSide(2, "#FFFFFF" if sel_ring else color),
+                bottom=ft.BorderSide(2, "#FFFFFF" if sel_ring else color),
+                left=ft.BorderSide(2, "#FFFFFF" if sel_ring else color),
+                right=ft.BorderSide(2, "#FFFFFF" if sel_ring else color),
             ),
-            opacity=0.4 if taken else 1.0,
+            opacity=0.45 if taken else 1.0,
             on_click=self._click,
         )
-        self._slash = ft.Container(
-            content=ft.Text("/", size=30, color="#EE1111", weight=ft.FontWeight.W_900),
-            alignment=ft.Alignment(0, -0.1),
+        # Two rotated bars centered in the Stack → form a clean ✕
+        self._x_overlay = ft.Stack(
+            controls=[_x_line(0.7854), _x_line(-0.7854)],
+            alignment=ft.Alignment(0, 0),
             width=28, height=28,
             visible=taken,
         )
-        super().__init__(controls=[self._circle, self._slash], width=28, height=28)
+        super().__init__(
+            controls=[self._circle, self._x_overlay],
+            width=28, height=28,
+        )
 
     def _click(self, e):
         if not self._taken:
@@ -88,9 +103,8 @@ class _ColorSwatch(ft.Stack):
             left=ft.BorderSide(2, "#FFFFFF" if sel_ring else self._color),
             right=ft.BorderSide(2, "#FFFFFF" if sel_ring else self._color),
         )
-        self._circle.opacity = 0.4 if taken else 1.0
-        self._circle.on_click = self._click  # still clickable only when not taken
-        self._slash.visible = taken
+        self._circle.opacity = 0.45 if taken else 1.0
+        self._x_overlay.visible = taken
         if self.page:
             self.update()
 

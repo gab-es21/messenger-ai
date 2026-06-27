@@ -61,7 +61,7 @@ class TitleBar(ft.Container):
             icon_color=TEXT_SECONDARY,
             icon_size=18,
             tooltip="Close",
-            on_click=lambda e: e.page.window.destroy(),
+            on_click=lambda e: e.page.run_task(e.page.window.destroy),
         )
 
         super().__init__(
