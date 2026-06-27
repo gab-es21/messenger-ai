@@ -12,7 +12,7 @@ def test_import_theme():
         TITLE_BAR_HEIGHT, CONTROL_BAR_HEIGHT, INPUT_BAR_HEIGHT,
         BUBBLE_RADIUS, BUBBLE_MAX_WIDTH, DOT_SIZE, DOT_DELAYS,
     )
-    assert len(AGENT_COLORS) == 6
+    assert len(AGENT_COLORS) == 12
     assert len(DOT_DELAYS) == 3
 
 

@@ -66,8 +66,7 @@ class ChatWindow(ft.Stack):
         self._settings_panel = SettingsPanel(
             on_close=self._close_settings,
             on_save=self._handle_settings_save,
-            on_appearance_change=self._apply_appearance,
-            on_appearance_revert=self._revert_appearance,
+            on_live_update=self._apply_draft_preview,
         )
 
         super().__init__(
@@ -100,8 +99,9 @@ class ChatWindow(ft.Stack):
         self._chat.add(b)
 
     def _add_agent(self, content: str, agent_name: str, agent_color: str,
-                   show_name: bool = True, animate: bool = True):
+                   agent_id: str = "", show_name: bool = True, animate: bool = True):
         entry = {"type": "agent", "content": content,
+                 "agent_id": agent_id,
                  "agent_name": agent_name, "agent_color": agent_color,
                  "show_name": show_name}
         self._message_log.append(entry)
@@ -119,10 +119,21 @@ class ChatWindow(ft.Stack):
         self._message_log.append(entry)
         self._chat.add(SystemMessage(text))
 
-    def _rebuild_chat(self, appearance: dict | None = None):
-        """Clear and re-add all stored messages using the given (or stored) appearance."""
+    def _rebuild_chat(self, appearance: dict | None = None, draft: dict | None = None):
+        """Clear and re-add all stored messages. Uses draft agent colors for live preview."""
         self._chat.clear()
         fz = self._effective_font_size(appearance)
+
+        # Build agent_id → current color map from draft (live) or store (post-save)
+        color_map: dict[str, str] = {}
+        if draft:
+            for a in draft.get("agents", []):
+                color_map[a["id"]] = a["color"]
+        else:
+            from data.settings_store import SettingsStore
+            for a in SettingsStore.instance().agents:
+                color_map[a["id"]] = a["color"]
+
         for entry in self._message_log:
             if entry["type"] == "user":
                 b = UserBubble(content=entry["content"], font_size=fz)
@@ -130,10 +141,11 @@ class ChatWindow(ft.Stack):
                 b._bubble.offset = ft.Offset(0, 0)
                 self._chat.add(b)
             elif entry["type"] == "agent":
+                color = color_map.get(entry.get("agent_id", ""), entry["agent_color"])
                 b = AgentBubble(
                     content=entry["content"],
                     agent_name=entry["agent_name"],
-                    agent_color=entry["agent_color"],
+                    agent_color=color,
                     show_name=entry["show_name"],
                     font_size=fz,
                 )
@@ -175,6 +187,7 @@ class ChatWindow(ft.Stack):
                 self._chat.remove(indicator)
                 self._add_agent(
                     content=msg["content"],
+                    agent_id=agent["id"],
                     agent_name=agent["name"],
                     agent_color=agent["color"],
                     show_name=show_name,
@@ -214,17 +227,13 @@ class ChatWindow(ft.Stack):
         log.info("Settings saved")
         self._rebuild_chat()
 
-    def _apply_appearance(self, appearance: dict):
-        """Live preview — rebuilds chat with draft appearance without touching the store."""
+    def _apply_draft_preview(self, draft: dict):
+        """Live preview for any draft change (appearance, agent colors). Never touches store."""
+        appearance = draft.get("appearance", {})
         if self.page:
-            font = appearance.get("font_family", "Roboto")
-            self.page.theme = ft.Theme(font_family=font)
+            self.page.theme = ft.Theme(font_family=appearance.get("font_family", "Roboto"))
             self.page.update()
-        self._rebuild_chat(appearance)
-
-    def _revert_appearance(self, original_appearance: dict):
-        """Cancel — rebuild using the original appearance without touching the store."""
-        self._apply_appearance(original_appearance)
+        self._rebuild_chat(appearance=appearance, draft=draft)
 
     def _handle_clear_chat(self):
         """Clear chat messages. Agent memories (data/agents/) are NOT touched."""

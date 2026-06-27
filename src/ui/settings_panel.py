@@ -37,53 +37,76 @@ def _divider() -> ft.Divider:
     return ft.Divider(height=1, color=BORDER)
 
 
-class _ColorSwatch(ft.Container):
-    def __init__(self, color: str, selected: bool, on_pick):
+class _ColorSwatch(ft.Stack):
+    """Color circle. Shows a checkmark when selected; a red slash when taken by another agent."""
+
+    def __init__(self, color: str, selected: bool, taken: bool, on_pick):
         self._color = color
         self._on_pick = on_pick
-        self._check = ft.Container(
-            content=ft.Text("✓", size=12, color="#FFFFFF", weight=ft.FontWeight.W_700),
-            alignment=ft.Alignment(0, 0),
-            visible=selected,
-        )
-        super().__init__(
-            content=self._check,
-            width=30, height=30,
+        self._taken = taken
+        self._selected = selected
+
+        self._circle = ft.Container(
+            width=28, height=28,
             bgcolor=color,
-            border_radius=15,
+            border_radius=14,
             alignment=ft.Alignment(0, 0),
-            border=ft.border.Border(
-                top=ft.BorderSide(2, "#FFFFFF" if selected else color),
-                bottom=ft.BorderSide(2, "#FFFFFF" if selected else color),
-                left=ft.BorderSide(2, "#FFFFFF" if selected else color),
-                right=ft.BorderSide(2, "#FFFFFF" if selected else color),
+            content=ft.Text(
+                "✓", size=11, color="#FFFFFF",
+                weight=ft.FontWeight.W_700,
+                visible=selected and not taken,
             ),
+            border=ft.border.Border(
+                top=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
+                bottom=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
+                left=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
+                right=ft.BorderSide(2, "#FFFFFF" if (selected and not taken) else color),
+            ),
+            opacity=0.4 if taken else 1.0,
             on_click=self._click,
         )
+        self._slash = ft.Container(
+            content=ft.Text("/", size=30, color="#EE1111", weight=ft.FontWeight.W_900),
+            alignment=ft.Alignment(0, -0.1),
+            width=28, height=28,
+            visible=taken,
+        )
+        super().__init__(controls=[self._circle, self._slash], width=28, height=28)
 
     def _click(self, e):
-        self._on_pick(self._color)
+        if not self._taken:
+            self._on_pick(self._color)
 
-    def set_selected(self, selected: bool):
-        self._check.visible = selected
-        self._check.update()
-        self.border = ft.border.Border(
-            top=ft.BorderSide(2, "#FFFFFF" if selected else self._color),
-            bottom=ft.BorderSide(2, "#FFFFFF" if selected else self._color),
-            left=ft.BorderSide(2, "#FFFFFF" if selected else self._color),
-            right=ft.BorderSide(2, "#FFFFFF" if selected else self._color),
+    def set_state(self, selected: bool, taken: bool):
+        self._selected = selected
+        self._taken = taken
+        sel_ring = selected and not taken
+        self._circle.content.visible = sel_ring
+        self._circle.border = ft.border.Border(
+            top=ft.BorderSide(2, "#FFFFFF" if sel_ring else self._color),
+            bottom=ft.BorderSide(2, "#FFFFFF" if sel_ring else self._color),
+            left=ft.BorderSide(2, "#FFFFFF" if sel_ring else self._color),
+            right=ft.BorderSide(2, "#FFFFFF" if sel_ring else self._color),
         )
-        self.update()
+        self._circle.opacity = 0.4 if taken else 1.0
+        self._circle.on_click = self._click  # still clickable only when not taken
+        self._slash.visible = taken
+        if self.page:
+            self.update()
 
 
 class _AgentTile(ft.ExpansionTile):
     """Collapsible agent config. Header shows color dot + enabled badge."""
 
-    def __init__(self, index: int, draft_agent: dict, on_change):
+    def __init__(self, index: int, draft_agent: dict, all_draft_agents: list,
+                 on_change, on_color_pick=None):
         self._index = index
         self._d = draft_agent          # points into parent's draft dict
         self._on_change = on_change
+        self._on_color_pick_cb = on_color_pick
         self._swatches: list[_ColorSwatch] = []
+
+        used_by_others = {a["color"] for i2, a in enumerate(all_draft_agents) if i2 != index}
 
         self._name_field = ft.TextField(
             value=self._d["name"],
@@ -134,7 +157,7 @@ class _AgentTile(ft.ExpansionTile):
             on_change=self._on_enable_change,
         )
 
-        swatch_row = self._build_swatch_row(self._d["color"])
+        swatch_row = self._build_swatch_row(self._d["color"], used_by_others)
 
         reset_btn = ft.TextButton(
             content=ft.Text("↺ Reset to default", size=11, color=TEXT_SECONDARY),
@@ -220,12 +243,20 @@ class _AgentTile(ft.ExpansionTile):
             padding=ft.Padding(left=5, right=5, top=2, bottom=2),
         )
 
-    def _build_swatch_row(self, selected_color: str) -> ft.Row:
+    def _build_swatch_row(self, selected_color: str, used_by_others=None) -> ft.Row:
+        if used_by_others is None:
+            used_by_others = set()
         self._swatches = [
-            _ColorSwatch(c, c == selected_color, self._on_color_pick)
+            _ColorSwatch(c, c == selected_color, c in used_by_others, self._on_color_pick)
             for c in AGENT_COLORS
         ]
-        return ft.Row(controls=self._swatches, spacing=SPACE_SM)
+        return ft.Row(controls=self._swatches, wrap=True, spacing=SPACE_SM, run_spacing=SPACE_SM)
+
+    def update_taken_colors(self, used_by_others: set):
+        """Called by parent panel whenever any agent's color changes."""
+        current = self._d["color"]
+        for sw in self._swatches:
+            sw.set_state(selected=(sw._color == current), taken=(sw._color in used_by_others))
 
     # ── handlers ──────────────────────────────────────────────────────────────
 
@@ -246,11 +277,12 @@ class _AgentTile(ft.ExpansionTile):
         self.update()
 
     def _on_color_pick(self, color: str):
-        self._update("color", color)
+        self._d["color"] = color
+        self._on_change()       # mark dirty + show footer
         self._header_dot.bgcolor = color
         self._header_dot.update()
-        for sw in self._swatches:
-            sw.set_selected(sw._color == color)
+        if self._on_color_pick_cb:
+            self._on_color_pick_cb()   # parent: sync_taken_colors + live_update
 
     def _on_temp_change(self, e):
         val = round(e.control.value, 1)
@@ -307,11 +339,10 @@ class _AgentTile(ft.ExpansionTile):
 
 
 class SettingsPanel(ft.Container):
-    def __init__(self, on_close, on_save, on_appearance_change, on_appearance_revert):
+    def __init__(self, on_close, on_save, on_live_update):
         self._on_close_cb = on_close
         self._on_save_cb = on_save
-        self._on_appearance_change = on_appearance_change
-        self._on_appearance_revert = on_appearance_revert
+        self._on_live_update = on_live_update  # (draft: dict) → live preview in chat
 
         from data.settings_store import SettingsStore
         self._store = SettingsStore.instance()
@@ -440,8 +471,25 @@ class SettingsPanel(ft.Container):
             self._agents_col,
         ], spacing=0)
 
+        reset_all_btn = ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.TextButton(
+                        content=ft.Text("↺  Reset all settings to defaults",
+                                        size=11, color=TEXT_SECONDARY),
+                        on_click=self._handle_reset_all,
+                        style=ft.ButtonStyle(
+                            padding=ft.Padding(left=0, right=0, top=0, bottom=0),
+                        ),
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.END,
+            ),
+            padding=ft.Padding(left=SPACE_MD, right=SPACE_MD, top=SPACE_SM, bottom=0),
+        )
+
         return ft.Column(
-            controls=[appearance_section, global_section, agents_section],
+            controls=[reset_all_btn, appearance_section, global_section, agents_section],
             scroll=ft.ScrollMode.AUTO,
             spacing=0,
             expand=True,
@@ -531,9 +579,16 @@ class SettingsPanel(ft.Container):
         self._round_delay_label.value = f"Between rounds: {glb.get('inter_round_delay', 4.0):.1f}s"
         self._round_delay_slider.value = glb.get("inter_round_delay", 4.0)
 
-        # Rebuild agent tiles from draft
+        # Rebuild agent tiles from draft (each tile knows all agents to show taken colors)
+        all_agents = self._draft["agents"]
         self._agents_col.controls = [
-            _AgentTile(i, self._draft["agents"][i], self._mark_has_changes)
+            _AgentTile(
+                index=i,
+                draft_agent=all_agents[i],
+                all_draft_agents=all_agents,
+                on_change=self._mark_has_changes,
+                on_color_pick=self._on_any_color_change,
+            )
             for i in range(5)
         ]
 
@@ -575,7 +630,7 @@ class SettingsPanel(ft.Container):
         self._preview_appearance()
 
     def _preview_appearance(self):
-        self._on_appearance_change(self._draft["appearance"])
+        self._on_live_update(self._draft)
 
     # ── Global handlers ───────────────────────────────────────────────────────
 
@@ -610,4 +665,28 @@ class SettingsPanel(ft.Container):
         self._draft = copy.deepcopy(self._original)
         self._has_changes = False
         self._footer.visible = False
-        self._on_appearance_revert(self._original["appearance"])
+        self._on_live_update(self._original)  # revert chat to original appearance + agent colors
+
+    # ── Color change coordination ─────────────────────────────────────────────
+
+    def _on_any_color_change(self):
+        """Called by any agent tile when its color changes. Syncs taken-state across all tiles."""
+        self._sync_taken_colors()
+        self._on_live_update(self._draft)
+
+    def _sync_taken_colors(self):
+        tiles = [c for c in self._agents_col.controls if isinstance(c, _AgentTile)]
+        for i, tile in enumerate(tiles):
+            used = {self._draft["agents"][j]["color"]
+                    for j in range(len(self._draft["agents"])) if j != i}
+            tile.update_taken_colors(used)
+
+    def _handle_reset_all(self, e):
+        from data.settings_store import default_settings
+        self._draft = default_settings()
+        self._has_changes = False       # reset so _mark_has_changes will trigger
+        self._sync_controls_from_draft()
+        self._mark_has_changes()        # show Save/Cancel
+        self._on_live_update(self._draft)
+        if self.page:
+            self.page.update()

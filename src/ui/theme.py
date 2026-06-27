@@ -25,14 +25,20 @@ ERROR = "#FF4444"
 WARNING = "#FFA500"
 INFO = "#0084FF"
 
-# ── Agent color pool (index 0-5) ─────────────────────────────────────────────
+# ── Agent color pool — 12 colors across the full hue wheel ───────────────────
 AGENT_COLORS = [
-    "#2DA44E",  # A2 GitHub green
-    "#8957E5",  # A3 Rich violet
-    "#D35400",  # B4 Burnt orange
-    "#B03A2E",  # C1 Dark red
-    "#6C3483",  # C3 Deep purple
-    "#1B7EB3",  # fallback steel blue (6th slot)
+    "#2DA44E",  #  1  ~120° GitHub green
+    "#8957E5",  #  2  ~265° rich violet
+    "#D35400",  #  3  ~22°  burnt orange
+    "#B03A2E",  #  4  ~5°   dark red
+    "#6C3483",  #  5  ~285° deep purple
+    "#1B7EB3",  #  6  ~205° steel blue
+    "#0F766E",  #  7  ~172° dark teal
+    "#CA8A04",  #  8  ~45°  golden amber
+    "#BE185D",  #  9  ~330° raspberry rose
+    "#D946EF",  # 10  ~295° fuchsia
+    "#15803D",  # 11  ~148° forest green
+    "#4338CA",  # 12  ~250° indigo
 ]
 
 # ── Layout ───────────────────────────────────────────────────────────────────
